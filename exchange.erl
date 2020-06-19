@@ -21,12 +21,6 @@ start() ->
 
 exchangeaction(FetchedData) ->
 	SendData = element(2,FetchedData),
-	% CusttData=[tuple_to_list(CustData)],
-%% 	lists:foreach( fun(Tuple)->
-%%     	{Sender,ReceiverList} = Tuple,
-%%     	io:format("~w: ~w ~n",[Sender,ReceiverList])
-%% 		%io:format("~w~n",[Sender]),
-%%    		end,SendData).
 
 	lists:map( fun(Tuple)-> 
 		{Sender,ReceiverList} = Tuple,
@@ -43,7 +37,7 @@ exchangereceive() ->
 			io:fwrite("Msg in get_feedback2 ~s \n\n", [Msg]),
 			timer:sleep(rand:uniform(200)),
 		    exchangereceive()
-	after 2000 -> true %master's gonna end
+	after 2000 -> io:fwrite("master is ended\n") %master's gonna end
 	end.
 
 
