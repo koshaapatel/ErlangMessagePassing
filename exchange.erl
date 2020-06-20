@@ -1,7 +1,6 @@
 %% @author kay
 %% @doc @todo Add description to exchange.
 
-
 -module(exchange).
 
 %% ====================================================================
@@ -31,31 +30,26 @@ exchangeaction(SendData) ->
 
 	lists:map( fun(Receiver)-> 
 		{Sender,ReceiverList} = Receiver,
-		MasterId = spawn(calling, callingaction, []),
+		MasterId = spawn(calling, callingaction, [Sender,self()]),
 		%register(Sender,)
 		% io:fwrite("~w: ~w\n",[MasterId, ReceiverList]),
 		MasterId ! {[Sender], [ReceiverList], self(), 0}
-		
 		end, SendData), %io:fwrite("parent ID: ~w\n\n", [self()]),
-
 	exchangereceive().
 
 exchangereceive() ->
 	receive
-		{Msg} -> 
-			io:fwrite("Msg in get_feedback2 ~s \n\n", [Msg]),
-			timer:sleep(rand:uniform(200)),
+		{Message} -> 
+			io:fwrite("Process ~w has received no calls for 5 seconds, ending...\n\n", [Message]),
 		    exchangereceive();
 	
-		{[Receiver], [SenderName], MyStamp, Flag} 
-			when Flag==0 ->
-				io:fwrite("~w received intro message from ~w ~w\n",[Receiver,SenderName,MyStamp]),
-				exchangereceive();
+		{[Receiver], [SenderName], MyStamp, 0} ->
+			io:fwrite("~w received intro message from ~w [~w]\n",[Receiver,SenderName,MyStamp]),
+			exchangereceive();
 		
-		{[Receiver], [SenderName], MyStampp, Flagg, Flaggg}
-		  	when Flagg==1 ->
-				io:fwrite("~w received content message from ~w ~w\n",[Receiver,SenderName,MyStampp]),
-				exchangereceive()
+		{[Receiver], [SenderName], MyStamp, 1} ->
+			io:fwrite("~w received reply message from ~w [~w]\n",[Receiver,SenderName,MyStamp]),
+			exchangereceive()
 			
-	after 2000 -> io:fwrite("master is ended\n") %master's gonna end
+	after 2000 -> io:fwrite("Master has received no replies for 10 seconds, ending...\n") %master's gonna end
 	end.
