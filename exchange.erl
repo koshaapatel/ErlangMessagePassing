@@ -1,4 +1,4 @@
-%% @author kay
+%% @author kosha
 %% @doc @todo Add description to exchange.
 
 -module(exchange).
@@ -16,31 +16,29 @@
 
 start() -> 
    Data = file:consult("calls.txt"),
-   SendData = element(2,Data), %	io:fwrite("~w:",[SendData]),
+   SendData = element(2,Data), 
 	
    io:fwrite("** Calls to be made **\n"),
 	lists:map( fun(Receiver)-> 
 		{Sender,ReceiverList} = Receiver,
-		io:fwrite("~w:	",[Sender]),
+		io:fwrite("~w: ",[Sender]),
 		io:fwrite("~w\n",[ReceiverList])
 		end, SendData),
 	exchangeaction(SendData).
 
 exchangeaction(SendData) ->
-
+	io:fwrite("\n"),
 	lists:map( fun(Receiver)-> 
 		{Sender,ReceiverList} = Receiver,
 		MasterId = spawn(calling, callingaction, [Sender,self()]),
-		%register(Sender,)
-		% io:fwrite("~w: ~w\n",[MasterId, ReceiverList]),
 		MasterId ! {[Sender], [ReceiverList], self(), 0}
-		end, SendData), %io:fwrite("parent ID: ~w\n\n", [self()]),
+		end, SendData), 
 	exchangereceive().
 
 exchangereceive() ->
 	receive
 		{Message} -> 
-			io:fwrite("Process ~w has received no calls for 5 seconds, ending...\n\n", [Message]),
+			io:fwrite("\nProcess ~w has received no calls for 5 seconds, ending...\n", [Message]),
 		    exchangereceive();
 	
 		{[Receiver], [SenderName], MyStamp, 0} ->
@@ -51,5 +49,5 @@ exchangereceive() ->
 			io:fwrite("~w received reply message from ~w [~w]\n",[Receiver,SenderName,MyStamp]),
 			exchangereceive()
 			
-	after 2000 -> io:fwrite("Master has received no replies for 10 seconds, ending...\n") %master's gonna end
+	after 10000 -> io:fwrite("\nMaster has received no replies for 10 seconds, ending...\n") 
 	end.
